@@ -6,10 +6,12 @@ import {
   TouchableOpacity, 
   TextInput,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { theme } from './colors';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Fontisto from '@expo/vector-icons/Fontisto';
 
 const STORAGE_KEY = "@toDos";
 
@@ -24,11 +26,19 @@ export default function App() {
   const work = () => setWorking(true);
   const onChangeText = (payload) => setText(payload);
   const saveToDos = async (toSave) => {
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    try{
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+    }catch(e){
+
+    }
   };
   const loadToDos = async() => {
-     const s = await AsyncStorage.getItem(STORAGE_KEY);
-     setToDos(JSON.parse(s))
+    try{
+      const s = await AsyncStorage.getItem(STORAGE_KEY);
+      setToDos(JSON.parse(s))
+    }catch(e){
+
+    }
   };
 
   const addToDo = async () => {
@@ -44,8 +54,23 @@ export default function App() {
     await saveToDos(newToDos);
     setText("");
   };
-
-  console.log(toDos);
+  const deleteToDo = (key) => {
+    Alert.alert(
+      "Delete To Do?",
+      "Are you sure?",[
+      {text: "Cancel"},
+      {
+        text: "I'm Sure", 
+        onPress: () =>{
+          const newToDos ={...toDos}
+          delete newToDos[key]
+          setToDos(newToDos);
+          saveToDos(newToDos);
+        }
+      },
+    ]);
+    return;
+  }
 
   return (
     <View style={styles.container}>
@@ -72,6 +97,9 @@ export default function App() {
           (
             <View style={styles.toDo} key={key}>
               <Text style={styles.toDoText}>{toDos[key].text}</Text>
+              <TouchableOpacity onPress={() => deleteToDo(key)}>                 
+                <Fontisto name="trash" size={18} color={theme.grey} />
+              </TouchableOpacity>
             </View>
           ) : null
           )}
@@ -105,11 +133,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   toDo:{
-    backgroundColor:theme.grey,
+    backgroundColor:theme.toDoBg,
     marginBottom:20,
     paddingVertical:20,
     paddingHorizontal:40,
     borderRadius:15,
+    flexDirection:"row",
+    alignItems:"center",
+    justifyContent:"space-between",
   },
   toDOText:{
     color: "white",
