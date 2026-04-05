@@ -5,6 +5,7 @@ import {
   View, 
   TouchableOpacity, 
   TextInput,
+  ScrollView,
 } from 'react-native';
 import { theme } from './colors';
 import { useState } from 'react';
@@ -41,7 +42,6 @@ console.log(toDos);
           <Text style={{...styles.btnText, color: !working ? "white": theme.grey}}>Travel</Text>
         </TouchableOpacity>
       </View>
-      <View>
         <TextInput 
           onSubmitEditing={addToDo}
           onChangeText={onChangeText}
@@ -50,7 +50,13 @@ console.log(toDos);
           placeholder={working ? "Add a To Do":"Where do you want go?"} 
           style={styles.input}>
         </TextInput>
-      </View>
+        <ScrollView>{Object.keys(toDos).map((key) => (
+          <View style={styles.toDo} key={key}>
+            <Text style={styles.toDoText}>{toDos[key].text}</Text>
+          </View>
+        ))}
+        </ScrollView>
+      
     </View>
   );
 }
@@ -75,7 +81,19 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 20,
     borderRadius: 30,
-    marginTop: 20,
+    marginVertical: 20,
     fontSize: 18,
+  },
+  toDo:{
+    backgroundColor:theme.grey,
+    marginBottom:20,
+    paddingVertical:20,
+    paddingHorizontal:40,
+    borderRadius:15,
+  },
+  toDOText:{
+    color: "white",
+    fontSize: 16,
+    fontWeight:"500",
   },
 });
