@@ -12,6 +12,7 @@ import { theme } from './colors';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Fontisto from '@expo/vector-icons/Fontisto';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const STORAGE_KEY = "@toDos";
 const WORKING_KEY = "@working";
@@ -20,6 +21,8 @@ export default function App() {
   const [working, setWorking] = useState(true);
   const [text, setText] = useState("");
   const [toDos, setToDos] = useState({});
+  const [editingKey, setEditingKey] = useState(null);
+  const [editText, setEditText] = useState("");
   useEffect(() => {
     loadWorking();
     loadToDos();
@@ -69,6 +72,21 @@ export default function App() {
     setToDos(newToDos);
     await saveToDos(newToDos);
     setText("");
+  };
+  const startEdit = (key) => {
+    setEditingKey(key);
+    setEditText(toDos[key].text);
+  };
+  const submitEdit = async () => {
+    if (editText.trim() === "") return;
+    const newToDos = {
+      ...toDos,
+      [editingKey]: {...toDos[editingKey], text: editText.trim()}
+    };
+    setToDos(newToDos);
+    await saveToDos(newToDos);
+    setEditingKey(null);
+    setEditText("");
   };
   const toggleDone = async (key) => {
     const newToDos = {
@@ -120,9 +138,21 @@ export default function App() {
           toDos[key].working === working ?
           (
             <View style={styles.toDo} key={key}>
-              <Text style={toDos[key].done ? styles.toDoTextDone : styles.toDoText}>
-                {toDos[key].text}
-              </Text>
+              {editingKey === key ? (
+                <TextInput
+                  style={styles.toDoInput}
+                  value={editText}
+                  onChangeText={setEditText}
+                  returnKeyType="done"
+                  onSubmitEditing={submitEdit}
+                  onEndEditing={submitEdit}
+                  autoFocus
+                />
+              ) : (
+                <Text style={toDos[key].done ? styles.toDoTextDone : styles.toDoText}>
+                  {toDos[key].text}
+                </Text>
+              )}
               <View style={styles.toDoActions}>
                 <TouchableOpacity onPress={() => toggleDone(key)}>
                   <Fontisto
@@ -130,6 +160,9 @@ export default function App() {
                     size={18}
                     color={toDos[key].done ? theme.grey : "white"}
                   />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => startEdit(key)}>
+                  <MaterialIcons name="edit" size={18} color={theme.grey} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => deleteToDo(key)}>
                   <Fontisto name="trash" size={18} color={theme.grey} />
@@ -191,5 +224,15 @@ const styles = StyleSheet.create({
   toDoActions:{
     flexDirection: "row",
     gap: 10,
+  },
+  toDoInput:{
+    flex: 1,
+    color: "white",
+    fontSize: 16,
+    fontWeight: "500",
+    borderBottomWidth: 1,
+    borderBottomColor: theme.grey,
+    paddingVertical: 0,
+    marginRight: 10,
   },
 });
