@@ -14,16 +14,32 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Fontisto from '@expo/vector-icons/Fontisto';
 
 const STORAGE_KEY = "@toDos";
+const WORKING_KEY = "@working";
 
 export default function App() {
   const [working, setWorking] = useState(true);
   const [text, setText] = useState("");
   const [toDos, setToDos] = useState({});
     useEffect(() => {
+    loadWorking();
     loadToDos();
   },[]);
-  const travel = () => setWorking(false);
-  const work = () => setWorking(true);
+  const travel = async () => {
+    setWorking(false);
+    await AsyncStorage.setItem(WORKING_KEY, "false");
+  };
+  const work = async () => {
+    setWorking(true);
+    await AsyncStorage.setItem(WORKING_KEY, "true");
+  };
+  const loadWorking = async () => {
+    try {
+      const value = await AsyncStorage.getItem(WORKING_KEY);
+      if (value !== null) {
+        setWorking(value === "true");
+      }
+    } catch(e) {}
+  };
   const onChangeText = (payload) => setText(payload);
   const saveToDos = async (toSave) => {
     try{
