@@ -20,7 +20,7 @@ export default function App() {
   const [working, setWorking] = useState(true);
   const [text, setText] = useState("");
   const [toDos, setToDos] = useState({});
-    useEffect(() => {
+  useEffect(() => {
     loadWorking();
     loadToDos();
   },[]);
@@ -63,12 +63,20 @@ export default function App() {
       return;
     }
     const newToDos ={
-      ...toDos, 
-      [Date.now()]:{text, working}
+      ...toDos,
+      [Date.now()]:{text, working, done: false}
     };
     setToDos(newToDos);
     await saveToDos(newToDos);
     setText("");
+  };
+  const toggleDone = async (key) => {
+    const newToDos = {
+      ...toDos,
+      [key]: {...toDos[key], done: !toDos[key].done}
+    };
+    setToDos(newToDos);
+    await saveToDos(newToDos);
   };
   const deleteToDo = (key) => {
     Alert.alert(
@@ -112,10 +120,21 @@ export default function App() {
           toDos[key].working === working ?
           (
             <View style={styles.toDo} key={key}>
-              <Text style={styles.toDoText}>{toDos[key].text}</Text>
-              <TouchableOpacity onPress={() => deleteToDo(key)}>                 
-                <Fontisto name="trash" size={18} color={theme.grey} />
-              </TouchableOpacity>
+              <Text style={toDos[key].done ? styles.toDoTextDone : styles.toDoText}>
+                {toDos[key].text}
+              </Text>
+              <View style={styles.toDoActions}>
+                <TouchableOpacity onPress={() => toggleDone(key)}>
+                  <Fontisto
+                    name={toDos[key].done ? "checkbox-active" : "checkbox-passive"}
+                    size={18}
+                    color={toDos[key].done ? theme.grey : "white"}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => deleteToDo(key)}>
+                  <Fontisto name="trash" size={18} color={theme.grey} />
+                </TouchableOpacity>
+              </View>
             </View>
           ) : null
           )}
@@ -152,15 +171,25 @@ const styles = StyleSheet.create({
     backgroundColor:theme.toDoBg,
     marginBottom:20,
     paddingVertical:20,
-    paddingHorizontal:40,
+    paddingHorizontal:20,
     borderRadius:15,
     flexDirection:"row",
     alignItems:"center",
     justifyContent:"space-between",
   },
-  toDOText:{
+  toDoText:{
     color: "white",
     fontSize: 16,
     fontWeight:"500",
+  },
+  toDoTextDone:{
+    color: theme.grey,
+    fontSize: 16,
+    fontWeight:"500",
+    textDecorationLine: "line-through",
+  },
+  toDoActions:{
+    flexDirection: "row",
+    gap: 10,
   },
 });
